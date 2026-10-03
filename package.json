@@ -1,0 +1,16 @@
+{
+  "name": "shopapp",
+  "version": "1.0.0",
+  "description": "Shop inventory management system",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "setup": "node setup.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "node-firebird": "^2.14.0",
+    "qrcode": "^1.5.3"
+  }
+}

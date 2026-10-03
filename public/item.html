@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="color-scheme" content="light">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="theme-color" content="#4f46e5"/>
+<title>Item Details — ShopApp</title>
+<style>
+    html {
+    color-scheme: light !important;
+}
+
+body {
+    color-scheme: light !important;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--accent:#4f46e5;--success:#22c55e;--warning:#f59e0b;--danger:#ef4444;--bg:#f5f7fa;--surface:#fff;--border:#e5e7eb;--text:#111827;--muted:#6b7280}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px;min-height:100vh}
+.topbar{background:var(--accent);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10}
+.back-btn{width:34px;height:34px;border-radius:50%;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.1);color:#fff;font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;text-decoration:none;flex-shrink:0}
+.topbar h1{font-size:16px;font-weight:600;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.content{max-width:480px;margin:0 auto;padding:16px}
+
+/* Item header card */
+.item-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px}
+.item-header{padding:18px;border-bottom:1px solid var(--border)}
+.item-name{font-size:20px;font-weight:700;margin-bottom:4px}
+.item-sku{font-size:12px;color:var(--muted);font-family:monospace}
+.item-cat{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:#eef2ff;color:var(--accent);margin-top:6px}
+.badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600}
+.badge.in{background:#dcfce7;color:#16a34a}
+.badge.low{background:#fef3c7;color:#d97706}
+.badge.out{background:#fee2e2;color:#dc2626}
+
+/* Info rows */
+.info-row{display:flex;justify-content:space-between;align-items:center;padding:13px 18px;border-bottom:1px solid var(--border)}
+.info-row:last-child{border-bottom:none}
+.info-label{font-size:12px;color:var(--muted);font-weight:500}
+.info-val{font-size:14px;font-weight:600}
+.price-val{font-size:22px;font-weight:700;color:var(--accent)}
+.stock-val{font-size:28px;font-weight:700;font-family:monospace}
+.desc-block{padding:13px 18px;border-top:1px solid var(--border)}
+.desc-block p{font-size:13px;color:var(--muted);line-height:1.6;margin-top:4px}
+
+/* Admin edit section */
+.admin-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px}
+.admin-header{padding:12px 16px;background:#eef2ff;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.admin-header span{font-size:13px;font-weight:600;color:var(--accent)}
+.admin-body{padding:16px}
+input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text)}
+input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px #eef2ff}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:4px}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{flex:1;padding:12px 16px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:14px;font-weight:600;font-family:inherit;cursor:pointer;transition:background .15s;min-width:120px}
+.btn:active{opacity:.85}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.danger{color:var(--danger);border-color:#fca5a5}
+.btn.danger:active{background:#fef2f2}
+
+/* Login prompt */
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;text-align:center;margin-bottom:14px}
+.login-card p{color:var(--muted);font-size:13px;margin-bottom:14px}
+.login-field{display:flex;gap:8px;margin-bottom:8px}
+.login-field input{flex:1}
+.login-field button{padding:10px 16px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;white-space:nowrap}
+.err{font-size:12px;color:var(--danger);text-align:center}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1f2937;color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;z-index:99;opacity:0;transition:opacity .25s;white-space:nowrap}
+.toast.show{opacity:1}
+
+.loading{text-align:center;padding:60px 20px;color:var(--muted)}
+.loading .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.error-state{text-align:center;padding:60px 20px}
+.error-state h2{font-size:18px;margin-bottom:6px}
+.error-state p{color:var(--muted);font-size:13px}
+.content {
+    width: 100%;
+    max-width: 900px;
+    margin: auto;
+    padding: 16px;
+}
+
+.item-card,
+.admin-card,
+.login-card {
+    width: 100%;
+}
+
+input,
+button {
+    width: 100%;
+}
+
+.btn-row {
+    display: flex;
+    gap: 10px;
+}
+
+@media (max-width: 768px) {
+
+    .btn-row {
+        flex-direction: column;
+    }
+
+    .login-field {
+        flex-direction: column;
+    }
+
+    .topbar h1 {
+        font-size: 14px;
+    }
+
+    .price-val {
+        font-size: 20px;
+    }
+
+    .stock-val {
+        font-size: 22px;
+    }
+
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <a href="/scan.html" class="back-btn">←</a>
+  <h1 id="pageTitle">Item Details</h1>
+  <a href="/cart.html" class="back-btn">🛒</a>
+</div>
+
+<div class="content" id="content">
+  <div class="loading"><div class="spinner"></div>Loading item…</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const params = new URLSearchParams(location.search);
+const itemId = params.get('id');
+let item = null;
+let allowNoStock = false;
+
+if (!itemId) {
+  document.getElementById('content').innerHTML = `<div class="error-state"><h2>❌ No item ID</h2><p>Scan a valid QR code to see item details.</p></div>`;
+} else {
+  loadItem();
+}
+
+async function loadItem() {
+    const configResponse = await fetch('/api/config');
+const appConfig = await configResponse.json();
+
+allowNoStock = appConfig.allowNoStock;
+  try {
+    const r = await fetch(`/api/item-by-ucode/${itemId}`);
+    if (!r.ok) throw new Error('Item not found');
+    item = await r.json();
+    const priceResponse = await fetch(
+    '/api/price/' + item.itemid
+);
+
+const priceData = await priceResponse.json();
+
+item.price = priceData.rate;
+const stockResponse = await fetch(
+    '/api/stock/' + item.itemid
+);
+
+const stockData = await stockResponse.json();
+
+item.stock = stockData.stock;
+    document.getElementById('pageTitle').textContent = item.name || 'Item Details';
+    render();
+    loadGroups();
+  } catch(e) {
+    document.getElementById('content').innerHTML = `<div class="error-state"><h2>❌ Item not found</h2><p>${e.message}</p><br><a href="/scan.html" style="color:var(--accent)">← Scan again</a></div>`;
+  }
+}
+
+function stockBadge(s) {
+  const n = parseInt(s)||0;
+  if (n === 0) return '<span class="badge out">Out of stock</span>';
+  if (n <= 5)  return '<span class="badge low">Low stock</span>';
+  return '<span class="badge in">In stock</span>';
+}
+
+function render() {
+  const n = parseInt(item.stock)||0;
+  const stockColor = n === 0 ? 'var(--danger)' : n <= 5 ? 'var(--warning)' : 'var(--success)';
+
+  document.getElementById('content').innerHTML = `
+    <!-- Item info card -->
+    <div class="item-name">
+    ${esc(item.item)} - ${esc(item.itemid)}
+</div>
+
+<div style="margin-top:12px;
+     margin-bottom:20px;">
+
+ <div style="
+    margin-top:15px;
+    margin-bottom:20px;
+    font-size:18px;
+    line-height:2.2;
+">
+
+    <p><b>Product</b> &nbsp;&nbsp;&nbsp;&nbsp; - ${esc(item.product)}</p>
+
+    <p><b>Category</b> &nbsp; - ${esc(item.category)}</p>
+
+    <p><b>Colour</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - ${esc(item.colour)}</p>
+
+    <p><b>Size</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - ${esc(item.itmsize)}</p>
+
+    <p><b>Quantity</b> &nbsp;&nbsp; - ${esc(item.qlty)}</p>
+
+    <p><b>Pack</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - ${esc(item.pack)}</p>
+
+</div>
+
+</div>
+      <hr style="
+    border:none;
+    border-top:1px solid #e5e7eb;
+    margin:20px 0;
+">
+      <div class="info-row">
+        <span class="info-label">Price</span>
+        <span class="price-val">₹${Number(item.price||0).toLocaleString('en-IN')}</span>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Stock</span>
+        <div style="text-align:right">
+          <div class="stock-val" style="color:${stockColor}">${n}</div>
+          <div style="margin-top:3px">${stockBadge(n)}</div>
+        </div>
+      </div>
+      <div class="desc-block">
+
+    <span class="info-label">
+    Group
+</span>
+
+<select
+    id="groupSelect"
+    style="
+        width:100%;
+        margin-top:10px;
+        padding:10px;
+        border:1px solid #ddd;
+        border-radius:8px;
+    "
+>
+    <option value="">
+        Select group
+    </option>
+</select>
+
+<input
+    type="text"
+    id="customGroup"
+    placeholder="Or type your own group"
+    style="
+        width:100%;
+        margin-top:10px;
+        padding:10px;
+        border:1px solid #ddd;
+        border-radius:8px;
+    "
+/>
+
+</div>
+      <div class="desc-block">
+
+    <span class="info-label">
+        Quantity
+    </span>
+
+    <input
+        type="number"
+        id="qtyInput"
+        value="1"
+        min="1"
+        style="
+            width:100%;
+            margin-top:10px;
+            padding:10px;
+            border:1px solid #ddd;
+            border-radius:8px;
+        "
+    />
+
+    <div
+        style="
+            display:flex;
+            gap:10px;
+            margin-top:12px;
+        "
+    >
+
+        <button
+            onclick="cancelQty()"
+            class="btn"
+        >
+            Cancel
+        </button>
+
+        <button
+            onclick="addToCart()"
+            class="btn primary"
+        >
+            Save
+        </button>
+
+    </div>
+
+</div>
+  `;
+}
+
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function toast(msg, err) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = err ? '#ef4444' : '#1f2937';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+async function loadGroups() {
+
+    const response = await fetch(
+        '/api/groups'
+    );
+
+    const groups = await response.json();
+
+    const select = document.getElementById(
+        'groupSelect'
+    );
+
+    groups.forEach(g => {
+
+        const option = document.createElement(
+            'option'
+        );
+
+        option.value = g.tmpgrp;
+
+        option.textContent = g.tmpgrp;
+
+        select.appendChild(option);
+
+    });
+}
+
+function addToCart() {
+
+    const qty = parseInt(
+        document.getElementById("qtyInput").value
+    );
+    if (qty > item.stock && !allowNoStock) {
+
+    toast("Not enough stock", true);
+
+    return;
+}
+if (item.stock <= 0 && allowNoStock) {
+
+    const ok = confirm(
+        "This item is out of stock.\n\n" +
+        "Do you want to add it anyway?"
+    );
+
+    if (!ok) {
+        return;
+    }
+}
+
+    let cart = JSON.parse(
+        localStorage.getItem("cart") || "[]"
+    );
+    const group =
+
+document.getElementById("customGroup").value ||
+
+document.getElementById("groupSelect").value;
+    //const existing = cart.find(
+    //p => p.id === item.id
+    // p => String(p.id) === String(itemId));
+
+    const existing = cart.find(
+    p =>
+        String(p.id) === String(itemId) &&
+        p.group === group
+);
+
+if (existing) {
+
+    existing.qty += qty;
+    //existing.location = location;
+    //existing.group = group;
+
+} else {
+    console.log(item);
+console.log(item.price);
+   /* cart.push({
+        id: itemId,
+        itemName: item.item,
+        name:
+           item.product + " / " +
+           item.category + " / " +
+           item.item + " / " +
+           item.colour + " / " +
+           item.itmsize + " / " +
+           item.qlty + " / " +
+           item.pack,
+        price: item.price,
+        qty: qty,
+        group: group,
+        unit: item.unit,
+
+});*/
+cart.push({
+
+    id: itemId,
+    itemid: item.itemid,
+    itemName: item.item,
+    product: item.product,
+    category: item.category,
+    colour: item.colour,
+    itmsize: item.itmsize,
+    qlty: item.qlty,
+    pack: item.pack,
+
+    name:
+        item.product + " / " +
+        item.category + " / " +
+        item.item + " / " +
+        item.colour + " / " +
+        item.itmsize + " / " +
+        item.qlty + " / " +
+        item.pack,
+
+    price: item.price,
+    qty: qty,
+    group: group,
+    unit: item.unit
+
+});
+}
+
+    localStorage.setItem(
+
+        "cart",
+
+        JSON.stringify(cart)
+
+    );
+
+    window.location.href =
+
+        "/cart.html";
+
+}
+function cancelQty() {
+
+    window.location.href = "/cart.html";
+
+}
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+        navigator.serviceWorker.register("/service-worker.js")
+            .then(function () {
+                console.log("ShopApp service worker registered");
+            })
+            .catch(function (error) {
+                console.error("Service worker registration failed:", error);
+            });
+    });
+}
+</script>
+</body>
+</html>

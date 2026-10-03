@@ -1,0 +1,245 @@
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<style>
+     html {
+    color-scheme: light !important;
+}
+
+body {
+    color-scheme: light !important;
+}
+    body {
+
+        font-family: Arial, sans-serif;
+
+        max-width: 500px;
+
+        margin: auto;
+
+        padding: 20px;
+
+        background: #f5f5f5;
+    }
+
+    h2 {
+
+        text-align: center;
+
+        margin-bottom: 20px;
+    }
+
+    label {
+
+        display: block;
+
+        margin-top: 15px;
+
+        margin-bottom: 6px;
+
+        font-weight: bold;
+        font-size: 21px;
+    }
+
+    input {
+
+        width: 100%;
+
+        padding: 12px;
+
+        border: 1px solid #ccc;
+
+        border-radius: 8px;
+
+        font-size: 25px;
+font-weight: bold;
+    }
+
+    button {
+
+        width: 100%;
+
+        margin-top: 40px;
+
+        padding: 25px;
+
+        border: none;
+
+        border-radius: 10px;
+
+        background: #4f46e5;
+
+        color: white;
+
+        font-size: 22px;
+        font-weight: bold;
+
+        cursor: pointer;
+    }
+
+    @media (max-width: 600px) {
+
+        body {
+
+            padding: 15px;
+        }
+        input{
+            font-size: 25px;
+        font-weight: bold;
+        }
+        button {
+
+            font-size: 22px;
+        }
+    }
+
+</style>
+<h2>New Customer Details</h2>
+
+<label>Salesperson</label>
+<input type="text" id="salesperson" readonly>
+
+<label>Customer Name</label>
+<input type="text" id="customerName">
+
+<label>Phone Number</label>
+<input type="tel" id="phoneNumber">
+
+<button onclick="continueToScanner()">
+    Continue
+</button>
+
+<script>
+
+document.getElementById("salesperson").value =
+    sessionStorage.getItem("username");
+
+function continueToScanner() { 
+
+    const customerName =
+        document.getElementById("customerName").value.trim();
+
+    if (customerName === "") {
+        showPopup("Customer name is required.");
+        document.getElementById("customerName").focus();
+        return;
+    }
+
+    const phone =
+        document.getElementById("phoneNumber").value.trim();
+
+if (!/^\d{10}$/.test(phone)) {
+    showPopup("Phone number must be exactly 10 digits.");
+    return;
+}
+    localStorage.removeItem("editingCartIndex");
+    localStorage.removeItem("cart");
+
+localStorage.removeItem("customerName");
+
+localStorage.removeItem("customerPhone");
+
+    localStorage.setItem(
+        "currentCart",
+        JSON.stringify({
+
+            salesperson: document
+                .getElementById("salesperson")
+                .value,
+
+            customerName: document
+                .getElementById("customerName")
+                .value,
+
+            phone: document
+                .getElementById("phoneNumber")
+                .value,
+
+            status: "Pending"
+
+        })
+    );
+    localStorage.setItem(
+    "customerName",
+    document.getElementById(
+        "customerName"
+    ).value
+);
+
+localStorage.setItem(
+    "customerPhone",
+    document.getElementById(
+        "phoneNumber"
+    ).value
+);
+
+    window.location.href = "/scan.html";
+}
+
+</script>
+<!-- CUSTOM POPUP -->
+<div id="customPopup" style="
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.45);
+    z-index:99999;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+">
+    <div style="
+        width:100%;
+        max-width:360px;
+        background:white;
+        border-radius:16px;
+        padding:24px;
+        box-shadow:0 15px 40px rgba(0,0,0,0.25);
+        text-align:center;
+    ">
+        <div id="popupMessage" style="
+            font-size:16px;
+            color:#333;
+            line-height:1.5;
+            margin-bottom:20px;
+        "></div>
+
+        <button onclick="closePopup()" style="
+            width:100%;
+            padding:12px;
+            border:none;
+            border-radius:10px;
+            background:#4f46e5;
+            color:white;
+            font-size:16px;
+            font-weight:bold;
+            cursor:pointer;
+            margin-top:0;
+        ">
+            OK
+        </button>
+    </div>
+</div>
+
+<script>
+function showPopup(message) {
+    document.getElementById("popupMessage").innerText = message;
+    document.getElementById("customPopup").style.display = "flex";
+}
+
+function closePopup() {
+    document.getElementById("customPopup").style.display = "none";
+}
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+        navigator.serviceWorker.register("/service-worker.js")
+            .then(function () {
+                console.log("ShopApp service worker registered");
+            })
+            .catch(function (error) {
+                console.error("Service worker registration failed:", error);
+            });
+    });
+}
+</script>

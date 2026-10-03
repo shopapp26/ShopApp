@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#4f46e5">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+  <meta name="color-scheme" content="light">
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>ShopApp — Admin</title>
+<style>
+  html {
+    color-scheme: light !important;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f7ff;
+  --surface:#ffffff;
+  --border:#dfe3ec;
+  --text:#17213a;
+  --muted:#737b91;
+  --accent:#7187f5;
+  --accent-light:#eef2ff;
+  --danger:#ef4444;
+  --success:#22c55e;
+  --warning:#f59e0b;
+  --radius:10px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+.btn{padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;font-family:inherit;cursor:pointer;font-weight:500;transition:all .15s}
+.btn:hover{background:#f9fafb}
+.btn.primary{
+  background:#7187f5;
+  color:#fff;
+  border-color:#7187f5;
+}
+.btn.primary:hover{background:#637bf0}
+.btn.danger{color:var(--danger);border-color:#fca5a5}
+.btn.danger:hover{background:#fef2f2}
+.btn.sm{padding:5px 11px;font-size:12px}
+input,select,textarea{
+  width:100%;
+  padding:14px 16px;
+  border:1px solid #dfe3ec;
+  border-radius:8px;
+  font-family:inherit;
+  font-size:18px;
+  color:var(--text);
+  background:#f8f9fd;
+}
+input:focus,
+select:focus,
+textarea:focus{
+  outline:none;
+  border-color:#7187f5;
+  box-shadow:0 0 0 3px rgba(113,135,245,0.14);
+}
+label{display:block;font-size:20px;font-weight:500;color:var(--muted);margin-bottom:4px}
+.field{margin-bottom:12px}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.badge.in{background:#dcfce7;color:#16a34a}
+.badge.low{background:#fef3c7;color:#d97706}
+.badge.out{background:#fee2e2;color:#dc2626}
+
+/* Login */
+#loginPage{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:100vh;
+  background:linear-gradient(
+    135deg,
+    #f8f9ff 0%,
+    #eef2ff 55%,
+    #f5f7ff 100%
+  );
+}
+.login-box{
+  background:rgba(255,255,255,0.97);
+  border-radius:16px;
+  padding:2.5rem 2rem;
+  width:340px;
+  box-shadow:0 20px 60px rgba(91,108,160,0.16);
+  border:1px solid #eef0f7;
+}
+.login-box h1{font-size:22px;text-align:center;margin-bottom:8px;font-weight:700;}
+.login-box p{text-align:center;color:var(--muted);font-size:18px;margin-bottom:24px}
+.logo{font-size:36px;text-align:center;margin-bottom:8px}
+.err{color:var(--danger);font-size:12px;margin-top:6px;text-align:center}
+
+/* Layout */
+#mainPage{display:none;min-height:100vh}
+.topbar{background:var(--accent);color:#fff;padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar h1{font-size:16px;font-weight:600}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.topbar .btn{color:#fff;border-color:rgba(255,255,255,.3);background:rgba(255,255,255,.1);font-size:12px;padding:6px 12px}
+.topbar .btn:hover{background:rgba(255,255,255,.2)}
+.content{max-width:1100px;margin:0 auto;padding:24px 16px}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+.stat-val{font-size:26px;font-weight:700;color:var(--accent)}
+.stat-label{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* Table card */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.card-header{padding:14px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.card-header h2{font-size:15px;font-weight:600}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;padding:9px 14px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;border-bottom:1px solid var(--border);background:#fafafa}
+td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f9fafb}
+.item-name{font-weight:500}
+.item-sku{font-size:11px;color:var(--muted);font-family:monospace}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.qr-img{width:48px;height:48px;border-radius:6px;border:1px solid var(--border);cursor:pointer;object-fit:contain}
+
+/* Modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:#fff;border-radius:14px;width:500px;max-width:100%;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-header{padding:18px 20px 0;display:flex;align-items:center;justify-content:space-between}
+.modal-header h2{font-size:16px;font-weight:600}
+.modal-body{padding:18px 20px}
+.modal-footer{padding:0 20px 18px;display:flex;justify-content:flex-end;gap:8px}
+.close-btn{width:30px;height:30px;border-radius:50%;border:1px solid var(--border);background:#f9fafb;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* QR modal */
+.qr-preview{text-align:center;padding:10px 0}
+.qr-preview img{width:200px;height:200px;border-radius:8px;border:1px solid var(--border)}
+.qr-url{font-size:11px;color:var(--muted);margin-top:8px;word-break:break-all}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:#1f2937;color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;z-index:999;opacity:0;transition:opacity .25s;pointer-events:none}
+.toast.show{opacity:1}
+
+@media(max-width:600px){
+  .grid2{grid-template-columns:1fr}
+  th:nth-child(4),td:nth-child(4),
+  th:nth-child(5),td:nth-child(5){display:none}
+  .content{padding:12px 10px}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage">
+  <div class="login-box">
+    <div class="logo">🛍️</div>
+    <h1>ShopApp</h1>
+    <p>Sign in to continue</p>
+    <div class="field">
+    <label>Username</label>
+    <select id="userInput">
+    <option value="">Select username</option>
+</select>
+</div>
+
+<div class="field">
+    <label>Password</label>
+    <input
+        type="password"
+        id="passInput"
+        placeholder="Enter password"
+    />
+</div>
+    <button
+    class="btn primary"
+    style="
+        width:100%;
+        padding:18px;
+        font-size:18px;
+        font-weight:bold;
+    "
+    onclick="doLogin()"
+>
+    Sign in
+</button>
+    <div class="err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainPage">
+  <div class="topbar">
+    <h1>🛍️ ShopApp Admin</h1>
+    <div class="topbar-right">
+      <a href="/scan.html" target="_blank"><button class="btn">📱 Open Scanner</button></a>
+      <button class="btn" onclick="doLogout()">Sign out</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+<div class="toast" id="toast"></div>
+
+<script>
+let items = [];
+let editingId = null;
+const ADMIN_PASS = sessionStorage.getItem('shop_auth');
+
+// ── Auth ──────────────────────────────────────────────────────────
+async function doLogin() {
+
+    const username =
+        document.getElementById('userInput').value;
+
+    const pass =
+        document.getElementById('passInput').value;
+  try {
+    const r = await fetch('/api/login', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+    username: username,
+    password: pass
+})
+    });
+    const d = await r.json();
+    if (d.success) {
+
+    sessionStorage.setItem(
+        'shop_auth',
+        pass
+    );
+
+    sessionStorage.setItem(
+        'username',
+        username
+    );
+
+     sessionStorage.setItem(
+        'smcode',
+        d.smcode
+    );
+    console.log("Stored SMCODE:", sessionStorage.getItem("smcode"));
+    window.location.href = "/choice.html";
+
+}
+    else {
+      document.getElementById('loginErr').textContent = 'Wrong username orpassword. Try again.';
+    }
+  } catch(e) {
+    document.getElementById('loginErr').textContent = 'Cannot connect to server.';
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem('shop_auth');
+  location.reload();
+}
+
+document.getElementById('passInput').onkeydown = e => { if(e.key==='Enter') doLogin(); };
+
+// Check if already logged in
+if (sessionStorage.getItem('shop_auth')) {
+
+    window.location.href = "/choice.html";
+
+}
+
+// ── Items ───────────────────────────────────────────────────────
+async function loadItems() {
+  try {
+    const r = await fetch('/api/items');
+    items = await r.json();
+    updateStats();
+    renderTable();
+  } catch(e) { toast('Error loading items: ' + e.message, true); }
+}
+
+function updateStats() {
+  document.getElementById('statTotal').textContent   = items.length;
+  document.getElementById('statInStock').textContent = items.filter(i=>i.stock>5).length;
+  document.getElementById('statLow').textContent     = items.filter(i=>i.stock>0&&i.stock<=5).length;
+  document.getElementById('statOut').textContent     = items.filter(i=>i.stock===0||i.stock==='0').length;
+}
+
+function renderTable() {
+  const q = (document.getElementById('searchBox').value||'').toLowerCase();
+  const filtered = q ? items.filter(i =>
+    (i.name||'').toLowerCase().includes(q) ||
+    (i.sku||'').toLowerCase().includes(q) ||
+    (i.category||'').toLowerCase().includes(q)
+  ) : items;
+
+  const tb = document.getElementById('tableBody');
+  if (!filtered.length) {
+    tb.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#9ca3af;padding:32px">No items found</td></tr>';
+    return;
+  }
+
+  tb.innerHTML = filtered.map(item => {
+    const stock = parseInt(item.stock)||0;
+    const badge = stock === 0
+      ? '<span class="badge out">Out of stock</span>'
+      : stock <= 5
+        ? '<span class="badge low">Low stock</span>'
+        : '<span class="badge in">In stock</span>';
+    return `<tr>
+      <td><img class="qr-img" src="/api/qr/${item.id}" loading="lazy" onclick="showQR(${item.id},'${escHtml(item.name)}')" title="Click to view QR" /></td>
+      <td><div class="item-name">${escHtml(item.name)}</div><div class="item-sku">${escHtml(item.sku||'')}</div></td>
+      <td>${escHtml(item.category||'')}</td>
+      <td>₹${Number(item.price||0).toLocaleString('en-IN')}</td>
+      <td style="font-family:monospace;font-weight:600">${stock}</td>
+      <td>${badge}</td>
+      <td><div class="actions">
+        <button class="btn sm" onclick="openEdit(${item.id})">✏️ Edit</button>
+        <button class="btn sm danger" onclick="deleteItem(${item.id},'${escHtml(item.name)}')">🗑</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Add / Edit ────────────────────────────────────────────────────
+function openAdd() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'Add new item';
+  ['name','sku','price','stock','desc'].forEach(f => document.getElementById('f-'+f).value = '');
+  document.getElementById('f-cat').value = 'Electronics';
+  document.getElementById('formModal').style.display = 'flex';
+}
+
+function openEdit(id) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  editingId = id;
+  document.getElementById('modalTitle').textContent = 'Edit item';
+  document.getElementById('f-name').value  = item.name||'';
+  document.getElementById('f-sku').value   = item.sku||'';
+  document.getElementById('f-cat').value   = item.category||'Electronics';
+  document.getElementById('f-price').value = item.price||'';
+  document.getElementById('f-stock').value = item.stock||'';
+  document.getElementById('f-desc').value  = item.description||'';
+  document.getElementById('formModal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('formModal').style.display = 'none';
+}
+
+async function saveItem() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { alert('Item name is required.'); return; }
+  const body = {
+    name,
+    sku: document.getElementById('f-sku').value.trim(),
+    category: document.getElementById('f-cat').value,
+    price: document.getElementById('f-price').value,
+    stock: document.getElementById('f-stock').value,
+    description: document.getElementById('f-desc').value.trim(),
+  };
+  try {
+    const url    = editingId ? `/api/items/${editingId}` : '/api/items';
+    const method = editingId ? 'PUT' : 'POST';
+    const r = await fetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    const d = await r.json();
+    if (d.success || d.id) {
+      toast(editingId ? 'Item updated!' : 'Item added!');
+      closeModal();
+      loadItems();
+    } else {
+      alert('Error: ' + (d.error||'Unknown error'));
+    }
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function deleteItem(id, name) {
+  if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+  try {
+    const r = await fetch(`/api/items/${id}`, { method:'DELETE' });
+    const d = await r.json();
+    if (d.success) { toast('Item deleted'); loadItems(); }
+    else alert('Error: ' + d.error);
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+// ── Utils ─────────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+async function loadUsers() {
+    try {
+        const response = await fetch('/api/users');
+
+        const users = await response.json();
+
+        const select = document.getElementById('userInput');
+
+        users.forEach(user => {
+            const option = document.createElement('option');
+
+            option.value = user.name;
+            option.textContent = user.name;
+
+            select.appendChild(option);
+        });
+
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+loadUsers();
+function toast(msg, err) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = err ? '#ef4444' : '#1f2937';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+        navigator.serviceWorker.register("/service-worker.js")
+            .then(function () {
+                console.log("ShopApp service worker registered");
+            })
+            .catch(function (error) {
+                console.error("Service worker registration failed:", error);
+            });
+    });
+}
+</script>
+</body>
+</html>

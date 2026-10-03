@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Cart</title>
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+     <meta name="color-scheme" content="light">
+    <style>
+        html {
+    color-scheme: light !important;
+}
+
+body {
+    color-scheme: light !important;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    background: #f5f5f5;
+    margin: 0;
+}
+
+.content {
+    width: 100%;
+    max-width: 1000px;
+    margin: auto;
+}
+
+.card {
+    background: white;
+    padding: 20px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+input,
+button {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 23px;
+}
+/*.card input[type="number"] {
+    width: 90px;
+}*/
+button {
+    cursor: pointer;
+    margin-top: 10px;
+    border: none;
+    background: #4f46e5;
+    color: white;
+    font-weight: bold;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+.row {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.col {
+    flex: 1;
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+h3 {
+    margin-top: 0;
+}
+
+label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+#count,
+#total {
+    margin: 20px 0;
+}
+
+/* Tablets */
+
+@media (max-width: 900px) {
+
+    body {
+        padding: 15px;
+    }
+
+    .content {
+        max-width: 100%;
+    }
+
+    .card {
+        padding: 18px;
+    }
+
+    .col {
+        min-width: 0;
+    }
+}
+
+/* Phones */
+
+@media (max-width: 600px) {
+
+    body {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    .card {
+        padding: 15px;
+    }
+
+    .row {
+        gap: 10px;
+    }
+    input,
+    button {
+        font-size: 16px;
+        padding: 12px;
+    }
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="content">
+
+    <div
+    style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        margin-bottom:20px;
+    "
+>
+
+    <h1 style="margin:0;">🛒 Cart</h1>
+
+    <button
+        onclick="submitCart()"
+        style="
+            width:auto;
+            padding:10px 18px;
+            background:#4f46e5;
+            color:white;
+            border:none;
+            border-radius:8px;
+            cursor:pointer;
+            font-weight:bold;
+        "
+    >
+        Submit
+    </button>
+
+</div>
+
+    <div style="margin-bottom:15px;">
+
+        <label><b>Employee Name</b></label>
+
+        <input
+            type="text"
+            id="employeeName"
+            readonly
+        >
+
+    </div>
+
+    <div class="row" style="margin-bottom:15px;">
+
+        <div class="col">
+
+            <label style="font-size:20px; margin-bottom:8px;">
+    <b>Customer Name</b>
+</label>
+
+            <input
+                type="text"
+                id="customerName"
+                placeholder="Enter customer name"
+            >
+
+        </div>
+
+        <div class="col">
+
+            <label style="font-size:20px; margin-bottom:8px;">
+    <b>Phone Number</b>
+</label>
+
+            <input
+                type="tel"
+                id="customerPhone"
+                placeholder="Enter phone number"
+                maxlength="10"
+                oninput="validatePhone(this)"
+            >
+
+        </div>
+
+    </div>
+
+    <h3 id="count"></h3>
+
+    <div id="cartContainer"></div>
+
+    <div id="cancelPopup"
+    style="
+        display:none;
+        position:fixed;
+        top:0;
+        left:0;
+        width:100%;
+        height:100%;
+        background:rgba(0,0,0,0.45);
+        z-index:9999;
+        align-items:center;
+        justify-content:center;
+        padding:20px;
+    "
+>
+
+    <div style="
+        background:white;
+        width:100%;
+        max-width:400px;
+        border-radius:12px;
+        padding:25px;
+        text-align:center;
+        box-shadow:0 5px 25px rgba(0,0,0,0.2);
+    ">
+
+        <h3 style="margin-bottom:15px;">
+            Any changes made will not be saved.
+        </h3>
+
+        <p style="
+            margin-bottom:20px;
+            color:#555;
+        ">
+            Do you want to cancel?
+        </p>
+
+        <div style="
+            display:flex;
+            gap:12px;
+        ">
+
+            <button
+                onclick="confirmCancel()"
+                style="
+                    flex:1;
+                    background:#ef4444;
+                    color:white;
+                    padding:12px;
+                    border:none;
+                    border-radius:8px;
+                    font-size:18px;
+                "
+            >
+                Yes
+            </button>
+
+            <button
+                onclick="closeCancelPopup()"
+                style="
+                    flex:1;
+                    background:#6b7280;
+                    color:white;
+                    padding:12px;
+                    border:none;
+                    border-radius:8px;
+                    font-size:18px;
+                "
+            >
+                No
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+    <h2 id="total"></h2>
+    
+
+<div class="cart-actions">
+
+  <div class="cart-actions">
+
+   <div style="
+    display:flex;
+    gap:14px;
+    margin-top:20px;
+    flex-wrap:wrap;
+">
+
+    <button
+        onclick="clearCart()"
+        style="
+            flex:1;
+            margin:0;
+            padding:14px;
+            background:#dc3545;
+            color:white;
+            border:none;
+            border-radius:9px;
+            font-size:17px;
+            font-weight:bold;
+        "
+    >
+        Clear Cart
+    </button>
+
+    <button
+        onclick="location.href='/scan.html'"
+        style="
+            flex:1;
+            margin:0;
+            padding:14px;
+            background:#3157d5;
+            color:white;
+            border:none;
+            border-radius:9px;
+            font-size:17px;
+            font-weight:bold;
+        "
+    >
+        Scan More
+    </button>
+
+    <button
+        onclick="cancelCart()"
+        style="
+            flex:1 1 100%;
+            margin:0;
+            padding:14px;
+            background:#6b7280;
+            color:white;
+            border:none;
+            border-radius:9px;
+            font-size:17px;
+            font-weight:bold;
+        "
+    >
+        Cancel
+    </button>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<script>
+   if (!sessionStorage.getItem("username")) {
+
+    window.location.replace("/index.html");
+
+}
+
+let cart = JSON.parse(
+    localStorage.getItem("cart") || "[]"
+);
+let groups = [];
+
+function renderCart() {
+
+    const container =
+        document.getElementById("cartContainer");
+
+    let total = 0;
+
+    container.innerHTML = "";
+
+    cart.forEach((item, index) => {
+
+        total += item.price * item.qty;
+                // Get item name and parameters safely
+        const parts = (item.name || "")
+            .split("/")
+            .map(x => x.trim());
+
+        const displayName =
+            item.itemName ||
+            item.item ||
+            parts[2] ||
+            "Item";
+
+        const displayParameters =
+    (item.colour || parts[3] || "") + " / " +
+    (item.itmsize || parts[4] || "") + " / " +
+    (item.qlty || parts[5] || "") + " / " +
+    (item.pack || parts[6] || "") +
+    "<br>" +
+    (item.product || parts[0] || "") + " / " +
+    (item.category || parts[1] || "");
+
+        
+container.innerHTML += `
+
+    <div class="card">
+
+        <!-- ITEM NAME + DELETE ICON -->
+        <div style="
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            width:100%;
+            margin-bottom:8px;
+        ">
+ 
+            <h3 style="
+                margin:0;
+                flex:1;
+                padding-right:15px;
+            ">
+                ${displayName} - ${item.itemid || item.id}
+            </h3>
+
+            <button
+                onclick="deleteItem(${index})"
+                title="Delete"
+                style="
+                    width:auto;
+                    background:none;
+                    border:none;
+                    padding:0;
+                    margin:0;
+                    cursor:pointer;
+                    flex-shrink:0;
+                "
+            >
+                <svg width="22" height="22" viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="#333"
+                     stroke-width="2"
+                     stroke-linecap="round"
+                     stroke-linejoin="round">
+                    <path d="M3 6h18"/>
+                    <path d="M8 6V4h8v2"/>
+                    <path d="M19 6l-1 15H6L5 6"/>
+                    <path d="M10 11v6"/>
+                    <path d="M14 11v6"/>
+                </svg>
+            </button>
+
+        </div>
+
+        <!-- OTHER ITEM PARAMETERS -->
+        <div style="
+            font-size:18px;
+            margin-bottom:15px;
+        ">
+            ${displayParameters}
+        </div>
+
+        <!-- PRICE / QUANTITY / UNIT -->
+        <div
+            style="
+                margin-top:10px;
+                display:grid;
+                grid-template-columns:1fr 1fr 1fr;
+                gap:12px;
+                align-items:start;
+            "
+        >
+
+            <!-- PRICE -->
+            <div>
+
+                <label><b>Price</b></label>
+
+                <input
+                    type="text"
+                    value="₹${item.price}"
+                    readonly
+                    style="
+                        width:100%;
+                        background:#f5f5f5;
+                    "
+                >
+
+            </div>
+
+            <!-- QUANTITY -->
+            <div>
+
+                <label><b>Quantity</b></label>
+
+                <input
+                    type="number"
+                    value="${item.qty}"
+                    min="1"
+                    oninput="updateQty(${index}, this.value)"
+                    style="
+                        width:100%;
+                    "
+                >
+
+            </div>
+
+            <!-- UNIT -->
+            <div>
+
+                <label><b>Unit</b></label>
+
+                <input
+                    type="text"
+                    value="${item.unit || ''}"
+                    readonly
+                    style="
+                        width:100%;
+                        background:#f5f5f5;
+                    "
+                >
+
+            </div>
+
+        </div>
+
+        <!-- GROUP -->
+        <div style="margin-top:20px;">
+
+            <p style="margin-bottom:8px;">
+                <b>Group</b>
+            </p>
+
+            <input
+                list="groups-list"
+                value="${item.group || ''}"
+                oninput="updateGroup(${index}, this.value)"
+                placeholder="Select or type group"
+                style="
+                    width:100%;
+                    padding:12px;
+                    border-radius:8px;
+                    border:1px solid #ccc;
+                    font-size:18px;
+                    background:white;
+                "
+            >
+
+            <datalist id="groups-list">
+                ${groups.map(g => `
+                    <option value="${g}"></option>
+                `).join("")}
+            </datalist>
+
+        </div>
+
+    </div>
+
+`;
+
+    });
+
+   
+
+    document.getElementById("total").innerText =
+
+        "Total = ₹" + total;
+       // loadGroupsForCart();
+}
+
+function updateQty(index, qty) {
+
+    qty = Number(qty);
+
+    if (qty < 1) {
+        qty = 1;
+    }
+
+    cart[index].qty = qty;
+
+    localStorage.setItem(
+
+        "cart",
+
+        JSON.stringify(cart)
+
+    );
+
+document.getElementById("total").innerText =
+    "Total = ₹" + cart.reduce(
+        (sum, item) => sum + (item.price * item.qty),
+        0
+    );
+
+    
+}
+
+function updateGroup(index, value) {
+
+    cart[index].group = value;
+
+    localStorage.setItem(
+
+        "cart",
+
+        JSON.stringify(cart)
+
+    );
+}
+
+async function loadGroupsForCart() {
+
+    const response = await fetch('/api/groups');
+
+    const data = await response.json();
+
+    groups = data.map(g => g.tmpgrp);
+
+    renderCart();
+}
+
+async function deleteItem(index) {
+
+    const item = cart[index];
+
+    if (!(await customConfirm("Delete this item from the cart?"))) {
+        return;
+    }
+
+    const mobile = localStorage.getItem("customerPhone");
+
+    try {
+
+        const response = await fetch(
+            `/api/cart/${mobile}/${item.id}/${encodeURIComponent(item.group || "_NO_GROUP_")}`,
+            {
+                method: "DELETE"
+            }
+        );
+
+        const text = await response.text();
+
+        console.log("DELETE RESPONSE:", text);
+
+        if (!response.ok) {
+            alert("Delete failed: " + text);
+            return;
+        }
+
+        const result = JSON.parse(text);
+
+        if (!result.success) {
+            alert(result.error || "Delete failed");
+            return;
+        }
+
+        // Remove from current cart
+        cart.splice(index, 1);
+
+        localStorage.setItem(
+            "cart",
+            JSON.stringify(cart)
+        );
+
+        renderCart();
+
+    } catch (error) {
+
+        alert("Delete failed: " + error.message);
+
+    }
+}
+
+async function clearCart() {
+
+    if (!(await customConfirm("Clear the entire cart?"))) {
+        return;
+    }
+
+    localStorage.removeItem("cart");
+
+    cart = [];
+
+    renderCart();
+}
+
+const username = sessionStorage.getItem(
+    "username"
+);
+
+document.getElementById(
+    "employeeName"
+).value = username || "";
+document.getElementById(
+    "customerName"
+).value = localStorage.getItem(
+    "customerName"
+) || "";
+
+document.getElementById(
+    "customerPhone"
+).value = localStorage.getItem(
+    "customerPhone"
+) || "";
+
+document.getElementById("customerName").oninput = function () {
+
+    localStorage.setItem(
+
+        "customerName",
+
+        this.value
+
+    );
+};
+
+document.getElementById("customerPhone").oninput = function () {
+
+    localStorage.setItem(
+
+        "customerPhone",
+
+        this.value
+
+    );
+};
+
+renderCart();
+loadGroupsForCart();
+
+async function submitCart() {
+
+    const customerName =
+    document.getElementById("customerName").value.trim();
+
+const customerPhone =
+    document.getElementById("customerPhone").value.trim();
+
+if (customerName === "") {
+
+    alert("Customer name is required.");
+
+    document.getElementById("customerName").focus();
+
+    return;
+}
+
+if (!/^\d{10}$/.test(customerPhone)) {
+
+    await customAlert("Phone number must be exactly 10 digits.");
+
+    document.getElementById("customerPhone").focus();
+
+    return;
+}
+
+    // Check if cart is empty
+    if (cart.length === 0) {
+
+        await customAlert("Cart is empty.");
+
+        return;
+    }
+    // Check phone number only for a NEW cart
+const isEditing =
+    localStorage.getItem("editingCart") === "true";
+
+//if (!isEditing && customerPhone.length !== 10) {
+
+   // alert("Phone number must be exactly 10 digits.");
+
+  //  document.getElementById("customerPhone").focus();
+
+   // return;}
+
+    // Normal submit confirmation
+   const ok = await customConfirm(
+
+        "Customer Name: " +
+        customerName +
+
+        "\n\nPhone Number: " +
+        customerPhone +
+
+        "\n\nConfirm submit?"
+    );
+
+
+    if (!ok) {
+        return;
+    }
+
+
+    // Save cart
+    const response = await fetch(
+        "/api/save-cart",
+        {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+body: JSON.stringify({
+
+    smcode: sessionStorage.getItem("smcode"),
+
+    customerName: customerName,
+
+    phone: customerPhone,
+
+    items: cart,
+
+    editing: localStorage.getItem("editingCart") === "true"
+
+})
+        }
+    );
+
+
+    const result =
+        await response.json();
+
+
+    if (result.success) {
+
+        await customAlert("Cart saved successfully.");
+
+        localStorage.removeItem("cart");
+        localStorage.removeItem("customerName");
+        localStorage.removeItem("customerPhone");
+        localStorage.removeItem("editingCartIndex");
+
+        window.location.href = "/choice.html";
+
+    } else {
+
+        await customAlert("Unable to save cart.");
+
+    }
+}
+/*function cancelCart() {
+
+    if (confirm("Are you sure you want to cancel this cart?")) {
+
+        localStorage.removeItem("cart");
+       localStorage.removeItem("editingCart");
+localStorage.removeItem("editingCartIndex");
+
+        window.location.reload();
+    }
+}
+
+window.addEventListener("pageshow", function () {
+
+    if (!sessionStorage.getItem("username")) {
+
+        window.location.replace("/index.html");
+
+    }
+
+});*/
+function cancelCart() {
+
+    document.getElementById("cancelPopup").style.display = "flex";
+
+}
+
+function closeCancelPopup() {
+
+    document.getElementById("cancelPopup").style.display = "none";
+
+}
+
+function confirmCancel() {
+
+    localStorage.removeItem("cart");
+    localStorage.removeItem("editingCart");
+    localStorage.removeItem("editingCartIndex");
+    localStorage.removeItem("customerName");
+    localStorage.removeItem("customerPhone");
+
+    window.location.href = "/choice.html";
+
+}
+
+function validatePhone(input) {
+
+    // Keep only digits
+    input.value = input.value.replace(/\D/g, "");
+
+    // Maximum 10 digits
+    if (input.value.length > 10) {
+        input.value = input.value.slice(0, 10);
+    }
+
+}
+</script>
+<style>
+#appDialogOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 99999;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+#appDialog {
+    width: 100%;
+    max-width: 380px;
+    background: white;
+    border-radius: 16px;
+    padding: 22px;
+    box-shadow: 0 15px 45px rgba(0,0,0,0.25);
+    font-family: Arial, sans-serif;
+}
+
+#appDialogTitle {
+    margin: 0 0 10px;
+    font-size: 20px;
+    color: #111827;
+}
+
+#appDialogMessage {
+    margin: 0 0 20px;
+    color: #4b5563;
+    font-size: 16px;
+    line-height: 1.5;
+    white-space: pre-line;
+}
+
+#appDialogButtons {
+    display: flex;
+    gap: 10px;
+}
+
+#appDialogButtons button {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 9px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#appDialogNo {
+    background: #e5e7eb;
+    color: #111827;
+}
+
+#appDialogYes {
+    background: #4f46e5;
+    color: white;
+}
+
+#appDialogYes.danger {
+    background: #ef4444;
+}
+</style>
+
+<div id="appDialogOverlay">
+
+    <div id="appDialog">
+
+        <h3 id="appDialogTitle">
+            Message
+        </h3>
+
+        <p id="appDialogMessage"></p>
+
+        <div id="appDialogButtons">
+
+            <button
+                id="appDialogNo"
+                type="button"
+            >
+                No
+            </button>
+
+            <button
+                id="appDialogYes"
+                type="button"
+            >
+                OK
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+function showAppDialog(message, confirmMode = false) {
+
+    return new Promise(resolve => {
+
+        const overlay =
+            document.getElementById("appDialogOverlay");
+
+        const msg =
+            document.getElementById("appDialogMessage");
+
+        const yes =
+            document.getElementById("appDialogYes");
+
+        const no =
+            document.getElementById("appDialogNo");
+
+        msg.textContent = message;
+
+        overlay.style.display = "flex";
+
+        yes.textContent =
+            confirmMode ? "Yes" : "OK";
+
+        no.style.display =
+            confirmMode ? "block" : "none";
+
+        yes.classList.toggle(
+            "danger",
+            confirmMode
+        );
+
+        function finish(value) {
+
+            overlay.style.display = "none";
+
+            yes.onclick = null;
+            no.onclick = null;
+            overlay.onclick = null;
+
+            resolve(value);
+        }
+
+        yes.onclick = () => finish(true);
+
+        no.onclick = () => finish(false);
+
+        overlay.onclick = e => {
+
+            if (
+                e.target === overlay &&
+                confirmMode
+            ) {
+                finish(false);
+            }
+
+        };
+
+    });
+
+}
+
+function customAlert(message) {
+
+    return showAppDialog(
+        message,
+        false
+    );
+
+}
+
+function customConfirm(message) {
+
+    return showAppDialog(
+        message,
+        true
+    );
+
+}
+
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+        navigator.serviceWorker.register("/service-worker.js")
+            .then(function () {
+                console.log("ShopApp service worker registered");
+            })
+            .catch(function (error) {
+                console.error("Service worker registration failed:", error);
+            });
+    });
+}
+</script>
+</body>
+
+</html>

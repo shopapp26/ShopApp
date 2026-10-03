@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta name="color-scheme" content="light">
+    <title>ShopApp</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        html {
+    color-scheme: light !important;}
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+
+            min-height: 100vh;
+
+            background: linear-gradient(
+                135deg,
+                #4f46e5,
+                #7c3aed
+            );
+
+            display: flex;
+
+            justify-content: center;
+
+            align-items: center;
+
+            padding: 20px;
+        }
+
+        .card {
+
+            width: 100%;
+            max-width: 500px;
+
+            background: rgba(
+                255,
+                255,
+                255,
+                0.96
+            );
+
+            border-radius: 25px;
+
+            padding: 35px 25px;
+
+            box-shadow:
+                0 20px 50px rgba(
+                    0,
+                    0,
+                    0,
+                    0.2
+                );
+
+            text-align: center;
+        }
+
+        h1 {
+
+            color: #333;
+
+            margin-bottom: 10px;
+
+            font-size: 32px;
+        }
+
+        .welcome {
+
+            color: #666;
+
+            margin-bottom: 35px;
+
+            font-size: 16px;
+        }
+        
+        .welcome b {
+    font-size: 20px;
+}
+
+        .btn {
+
+            width: 100%;
+
+            border: none;
+
+            border-radius: 14px;
+
+            padding: 16px;
+
+            font-size: 22px;
+
+            font-weight: bold;
+
+            cursor: pointer;
+
+            margin-bottom: 16px;
+
+            transition: 0.2s;
+        }
+
+        .btn:hover {
+
+            transform: translateY(-4px);
+
+            box-shadow:
+                0 10px 25px rgba(
+                    0,
+                    0,
+                    0,
+                    0.15
+                );
+        }
+
+        .existing {
+    background: #6366f1; /* indigo */
+    color: white;
+}
+
+        .new {
+
+            background:  #4F8061;
+
+            color: white;
+        }
+
+        .exit {
+
+            background:#ef4444;  
+
+            color: white;
+            margin-top:18px;
+        }
+ 
+
+        @media (max-width: 600px) {
+
+            .card {
+
+                padding: 25px 18px;
+            }
+
+            h1 {
+
+                font-size: 26px;
+            }
+
+            .btn {
+
+                font-size: 16px;
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+    <div class="card">
+
+        <h1>🛒 ShopApp</h1>
+
+        <div class="welcome">
+
+            Welcome,
+
+            <b id="username"></b>
+
+        </div>
+
+        <button
+            class="btn existing"
+            onclick="
+                window.location.href =
+                '/existing-carts.html'
+            "
+        >
+            📋 Existing Cart
+        </button>
+
+        <button
+            class="btn new"
+            onclick="
+                window.location.href =
+                '/customer.html'
+            "
+        >
+            ➕ New Cart
+        </button>
+        <button
+    class="btn exit"
+    onclick="logout()"
+>
+    🚪 Logout
+</button>
+    </div>
+
+    <script>
+        if (!sessionStorage.getItem("username")) {
+
+    window.location.replace("/index.html");
+
+}
+
+        document.getElementById( "username" ).innerText =
+            sessionStorage.getItem("username") ;
+    
+            function logout() {
+
+    sessionStorage.clear();
+
+    localStorage.removeItem("editingCartIndex");
+
+    window.location.replace("/index.html");
+
+}
+window.addEventListener("pageshow", function () {
+
+    if (!sessionStorage.getItem("username")) {
+
+        window.location.replace("/index.html");
+
+    }
+
+});
+
+    </script>
+<script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+        navigator.serviceWorker.register("/service-worker.js")
+            .then(function () {
+                console.log("ShopApp service worker registered");
+            })
+            .catch(function (error) {
+                console.error("Service worker registration failed:", error);
+            });
+    });
+}
+</script>
+</body>
+
+</html>

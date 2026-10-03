@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="theme-color" content="#0f0f0f"/>
+<title>Scan QR — ShopApp</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--accent:#4f46e5;--success:#22c55e;--text:#f0f0f0;--muted:#9ca3af}
+html,body{height:100%;background:#000;color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100dvh;max-width:480px;margin:0 auto;position:relative}
+.topbar{padding:14px 16px 10px;background:#111;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;z-index:5}
+.topbar h1{font-size:17px;font-weight:600}
+.topbar p{font-size:12px;color:var(--muted);margin-top:1px}
+.icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid #333;background:#222;color:var(--text);font-size:17px;display:flex;align-items:center;justify-content:center;cursor:pointer;text-decoration:none}
+.camera-wrap{position:relative;flex:1;overflow:hidden;background:#000}
+#video{width:100%;height:100%;object-fit:cover;display:block}
+#canvas{display:none}
+.scan-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+.scan-box{position:relative;width:280px;height:280px}
+.scan-box::before,.scan-box::after,.scan-box .c::before,.scan-box .c::after{content:'';position:absolute;width:28px;height:28px;border-color:#fff;border-style:solid}
+.scan-box::before{top:0;left:0;border-width:3px 0 0 3px;border-radius:6px 0 0 0}
+.scan-box::after{top:0;right:0;border-width:3px 3px 0 0;border-radius:0 6px 0 0}
+.scan-box .c::before{bottom:0;left:0;border-width:0 0 3px 3px;border-radius:0 0 0 6px}
+.scan-box .c::after{bottom:0;right:0;border-width:0 3px 3px 0;border-radius:0 0 6px 0}
+.scan-line{position:absolute;left:4px;right:4px;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);border-radius:1px;box-shadow:0 0 8px var(--accent);animation:scan 2s linear infinite}
+@keyframes scan{0%{top:8%;opacity:1}90%{top:90%;opacity:1}100%{top:90%;opacity:0}}
+.scan-hint{position:absolute;bottom:-34px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:13px;color:rgba(255,255,255,.7);text-shadow:0 1px 4px rgba(0,0,0,.9)}
+.flash{position:absolute;inset:0;background:rgba(79,70,229,.2);opacity:0;pointer-events:none;transition:opacity .1s}
+.flash.show{opacity:1}
+.cam-flip{position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:18px;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px)}
+.perm-screen{position:absolute;inset:0;background:#111;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:32px;text-align:center}
+.perm-screen h2{font-size:18px;font-weight:600}
+.perm-screen p{font-size:13px;color:var(--muted);line-height:1.6}
+.perm-btn{padding:13px 24px;background:var(--accent);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;font-family:inherit;cursor:pointer;width:100%;margin-top:8px}
+.status{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--success);box-shadow:0 0 5px var(--success);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <div>
+      <h1>📱 QR Scanner</h1>
+      <div class="status"><span class="dot" id="dot"></span><span id="statusTxt">Starting…</span></div>
+    </div>
+    <a href="/" class="icon-btn" title="Admin panel">🏠</a>
+  </div>
+
+  <div class="camera-wrap">
+    <video id="video" autoplay playsinline muted></video>
+    <canvas id="canvas"></canvas>
+
+    <div class="perm-screen" id="permScreen">
+      <div style="font-size:48px">📷</div>
+      <h2 id="permTitle">Camera access needed</h2>
+      <p id="permMsg">Allow camera access so you can scan QR codes on items.</p>
+      <button class="perm-btn" id="permBtn">Allow camera</button>
+    </div>
+
+    <div class="scan-overlay" id="scanOverlay">
+      <div class="scan-box">
+        <div class="c"></div>
+        <div class="scan-line"></div>
+        <div class="scan-hint">Point at item QR code</div>
+      </div>
+    </div>
+
+    <div class="flash" id="flash"></div>
+    <button class="cam-flip" id="flipBtn" title="Flip camera">🔄</button>
+  </div>
+</div>
+
+<script src="https://unpkg.com/jsqr/dist/jsQR.js"></script>
+<script>
+const video   = document.getElementById('video');
+const canvas  = document.getElementById('canvas');
+const ctx     = canvas.getContext('2d', {willReadFrequently:true});
+const flash   = document.getElementById('flash');
+const statusTxt = document.getElementById('statusTxt');
+const permScreen = document.getElementById('permScreen');
+const scanOverlay = document.getElementById('scanOverlay');
+const dot = document.getElementById('dot');
+
+let stream = null;
+let facing = 'environment';
+let cooldown = false;
+
+async function startCamera() {
+  if (stream) stream.getTracks().forEach(t => t.stop());
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+  video: {
+    facingMode: {
+      ideal: "environment"
+    },
+    width: { ideal: 640 },
+    height: { ideal: 480 }
+  }
+});
+    video.srcObject = stream;
+    await video.play();
+    permScreen.style.display = 'none';
+    scanOverlay.style.display = '';
+    statusTxt.textContent = 'Camera active — scanning…';
+    dot.style.background = '#22c55e';
+    requestAnimationFrame(tick);
+  } catch(err) {
+    permScreen.style.display = 'flex';
+    scanOverlay.style.display = 'none';
+    dot.style.background = '#ef4444';
+    statusTxt.textContent = 'Camera unavailable';
+    if (err.name === 'NotAllowedError') {
+      document.getElementById('permTitle').textContent = 'Camera access denied';
+      document.getElementById('permMsg').textContent = 'Go to browser settings → Site settings → Camera → Allow for this site.';
+      document.getElementById('permBtn').textContent = 'Reload page';
+      document.getElementById('permBtn').onclick = () => location.reload();
+    } else {
+      document.getElementById('permTitle').textContent = 'Camera error';
+      document.getElementById('permMsg').textContent = err.message;
+    }
+  }
+}
+
+function tick() {
+  if (video.readyState === video.HAVE_ENOUGH_DATA) {
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    ctx.drawImage(video, 0, 0);
+
+    const img = ctx.getImageData(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+
+    const code = jsQR(
+      img.data,
+      img.width,
+      img.height,
+      {
+        inversionAttempts: 'dontInvert'
+      }
+    );
+
+    // CHECK IF QR IS DETECTED
+    if (code && code.data && !cooldown) {
+      onScan(code.data);
+    }
+  }
+
+  requestAnimationFrame(tick);
+}
+
+function onScan(data) {
+
+    cooldown = true;
+    if (stream) {
+
+    stream.getTracks().forEach(track => {
+
+        track.stop();
+
+    });
+
+}
+
+    flash.classList.add('show');
+
+    setTimeout(() => {
+        flash.classList.remove('show');
+    }, 180);
+
+    if (navigator.vibrate) {
+        navigator.vibrate(80);
+    }
+
+    const productId = data.trim();
+      setTimeout(() => {
+
+        window.location.href =
+            '/item.html?id=' + productId;
+
+    }, 250);
+}
+startCamera();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+        navigator.serviceWorker.register("/service-worker.js")
+            .then(function () {
+                console.log("ShopApp service worker registered");
+            })
+            .catch(function (error) {
+                console.error("Service worker registration failed:", error);
+            });
+    });
+}
+</script>
+</body>
+</html>
