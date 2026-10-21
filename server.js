@@ -762,11 +762,44 @@ app.delete('/api/cart/:mobile/:ucode/:group', (req, res) => {
     });
 
 });
-// ── Start ─────────────────────────────────────────────────────────
+const https = require('https');
+const http = require('http');
+const os = require('os');
+
 const PORT = process.env.PORT || 3000;
 
-app.listen(PORT, '0.0.0.0', () => {
-    console.log('');
-    console.log('✅ Shop App running!');
-    console.log(`🖥️ Server running on port ${PORT}`);
-});
+function getLocalIp() {
+    const interfaces = os.networkInterfaces();
+    let fallback = 'localhost';
+    for (const name of Object.keys(interfaces)) {
+        for (const iface of interfaces[name]) {
+            if (iface.family === 'IPv4' && !iface.internal) {
+                if (/wi-fi|wireless|wlan/i.test(name)) {
+                    return iface.address;
+                }
+                if (!iface.address.startsWith('192.168.56.') && !iface.address.startsWith('172.19.')) {
+                    fallback = iface.address;
+                }
+            }
+        }
+    }
+    return fallback;
+}
+
+const keyPath = path.join(__dirname, 'key.pem');
+const certPath = path.join(__dirname, 'cert.pem');
+
+if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
+    https.createServer({
+        key: fs.readFileSync(keyPath),
+        cert: fs.readFileSync(certPath)
+    }, app).listen(PORT, '0.0.0.0', () => {
+        console.log(`Server running on https://localhost:${PORT}`);
+        console.log(`Mobile: https://${getLocalIp()}:${PORT}`);
+    });
+} else {
+    http.createServer(app).listen(PORT, '0.0.0.0', () => {
+        console.log(`Server running on http://localhost:${PORT}`);
+        console.log(`Mobile: http://${getLocalIp()}:${PORT}`);
+    });
+}
