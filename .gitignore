@@ -3,6 +3,3 @@ config.json
 *.fdb
 *.xlsx
 ~$*
-*.pem
-*.key
-*.crt

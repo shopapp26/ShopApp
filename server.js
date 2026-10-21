@@ -762,58 +762,11 @@ app.delete('/api/cart/:mobile/:ucode/:group', (req, res) => {
     });
 
 });
-const http = require('http');
-const https = require('https');
-const os = require('os');
-
+// ── Start ─────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 
-function getLocalIp() {
-    const interfaces = os.networkInterfaces();
-    for (const name of Object.keys(interfaces)) {
-        for (const iface of interfaces[name]) {
-            if (iface.family === 'IPv4' && !iface.internal) {
-                return iface.address;
-            }
-        }
-    }
-    return 'localhost';
-}
-
-function findCertificate() {
-    const candidates = [
-        { key: 'key.pem', cert: 'cert.pem' },
-        { key: 'server.key', cert: 'server.crt' },
-        { key: 'localhost+2-key.pem', cert: 'localhost+2.pem' },
-        { key: 'localhost+1-key.pem', cert: 'localhost+1.pem' },
-        { key: 'localhost-key.pem', cert: 'localhost.pem' }
-    ];
-
-    for (const pair of candidates) {
-        const keyFile = path.join(__dirname, pair.key);
-        const certFile = path.join(__dirname, pair.cert);
-        if (fs.existsSync(keyFile) && fs.existsSync(certFile)) {
-            return {
-                key: fs.readFileSync(keyFile),
-                cert: fs.readFileSync(certFile)
-            };
-        }
-    }
-
-    return null;
-}
-
-const localIp = getLocalIp();
-const sslData = findCertificate();
-
-if (sslData) {
-    https.createServer({ key: sslData.key, cert: sslData.cert }, app).listen(PORT, '0.0.0.0', () => {
-        console.log(`Server running on https://localhost:${PORT}`);
-        console.log(`Mobile: https://${localIp}:${PORT}`);
-    });
-} else {
-    http.createServer(app).listen(PORT, '0.0.0.0', () => {
-        console.log(`Server running on http://localhost:${PORT}`);
-        console.log(`Mobile: http://${localIp}:${PORT}`);
-    });
-}
+app.listen(PORT, '0.0.0.0', () => {
+    console.log('');
+    console.log('✅ Shop App running!');
+    console.log(`🖥️ Server running on port ${PORT}`);
+});

@@ -7,7 +7,7 @@ echo    ShopApp - Starting up...
 echo  ================================
 echo.
 
-cd /d "%~dp0"
+cd /d C:\Users\xsoft\OneDrive\Desktop\shopapp
 
 echo  Checking Node.js...
 node --version >nul 2>&1
